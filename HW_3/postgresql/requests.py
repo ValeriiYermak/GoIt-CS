@@ -4,7 +4,6 @@ import random
 from dotenv import load_dotenv
 from faker import Faker
 
-
 # Load environment variables from the .env file
 
 load_dotenv()
@@ -16,6 +15,7 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
+
 
 # Function to connect to the database
 def create_connection():
@@ -81,17 +81,22 @@ def update_task_status(conn, task_id, new_status_name):
             if status:
                 # If the status exists, update the task's status
                 status_id = status[0]
-                cur.execute("""
+                cur.execute(
+                    """
                     UPDATE tasks
                     SET status_id = %s
                     WHERE id = %s
                     RETURNING id, title, status_id;
-                """, (status_id, task_id))
+                """,
+                    (status_id, task_id),
+                )
 
                 updated_task = cur.fetchone()
 
                 if updated_task:
-                    print(f"Task ID {updated_task[0]} status updated to {new_status_name}.")
+                    print(
+                        f"Task ID {updated_task[0]} status updated to {new_status_name}."
+                    )
                 else:
                     print(f"Task with ID {task_id} not found.")
             else:
@@ -100,6 +105,7 @@ def update_task_status(conn, task_id, new_status_name):
     except Exception as e:
         print(f"Error updating task status: {e}")
         conn.rollback()
+
 
 # Function to get users without tasks
 def get_users_without_tasks(conn):
@@ -135,16 +141,21 @@ def insert_task(conn, user_id, title, description, status_name):
             if status:
                 status_id = status[0]
                 # Insert the new task into the 'tasks' table
-                cur.execute("""
+                cur.execute(
+                    """
                     INSERT INTO tasks (user_id, title, description, status_id)
                     VALUES (%s, %s, %s, %s)
                     RETURNING id, title, description, status_id;
-                """, (user_id, title, description, status_id))
+                """,
+                    (user_id, title, description, status_id),
+                )
 
                 new_task = cur.fetchone()
 
                 if new_task:
-                    print(f"For User ID={user_id} added task ID={new_task[0]}, Title={new_task[1]}, Status={status_name}.")
+                    print(
+                        f"For User ID={user_id} added task ID={new_task[0]}, Title={new_task[1]}, Status={status_name}."
+                    )
                 else:
                     print("Error adding the task.")
             else:
@@ -154,6 +165,7 @@ def insert_task(conn, user_id, title, description, status_name):
     except Exception as e:
         print(f"Error inserting task: {e}")
         conn.rollback()
+
 
 # Function to get tasks that are not completed
 def get_incomplete_tasks(conn):
@@ -175,6 +187,7 @@ def get_incomplete_tasks(conn):
         print(f"Error fetching incomplete tasks: {e}")
         return []
 
+
 # Function to delete a task by id
 def delete_task(conn, task_id):
     try:
@@ -190,6 +203,7 @@ def delete_task(conn, task_id):
     except Exception as e:
         print(f"Error deleting task: {e}")
         conn.rollback()
+
 
 # Function to get users with a certain email pattern
 def get_users_by_email(conn, email_pattern):
@@ -209,6 +223,7 @@ def get_users_by_email(conn, email_pattern):
     except Exception as e:
         print(f"Error fetching users by email: {e}")
         return []
+
 
 # Function to update user's name
 def update_user_name(conn, user_id, new_fullname):
@@ -230,12 +245,15 @@ def update_user_name(conn, user_id, new_fullname):
                 cur.execute(query, (new_fullname, user_id))
                 conn.commit()
 
-                print(f"The user with previous fullname '{old_fullname}' was updated to '{new_fullname}'.")
+                print(
+                    f"The user with previous fullname '{old_fullname}' was updated to '{new_fullname}'."
+                )
             else:
                 print(f"No user found with ID {user_id}.")
     except Exception as e:
         print(f"Error updating user name: {e}")
         conn.rollback()
+
 
 # Function to get task count for each status
 def get_task_count_by_status(conn):
@@ -253,6 +271,7 @@ def get_task_count_by_status(conn):
     except Exception as e:
         print(f"Error fetching task counts: {e}")
         return []
+
 
 def get_tasks_by_email_domain(conn, domain):
     try:
@@ -273,6 +292,7 @@ def get_tasks_by_email_domain(conn, domain):
         print(f"Error fetching tasks: {e}")
         return []
 
+
 # Function to get tasks without description
 def get_tasks_without_description(conn):
     try:
@@ -292,6 +312,7 @@ def get_tasks_without_description(conn):
         print(f"Error fetching tasks without description: {e}")
         return []
 
+
 def get_users_with_in_progress_tasks(conn):
     try:
         with conn.cursor() as cur:
@@ -302,7 +323,7 @@ def get_users_with_in_progress_tasks(conn):
                 INNER JOIN status ON tasks.status_id = status.id
                 WHERE status.name = %s;
             """
-            cur.execute(query, ('in_progress',))
+            cur.execute(query, ("in_progress",))
             users_with_tasks = cur.fetchall()
             if users_with_tasks:
                 return users_with_tasks
@@ -311,6 +332,7 @@ def get_users_with_in_progress_tasks(conn):
     except Exception as e:
         print(f"Error fetching users with in progress tasks: {e}")
         return []
+
 
 def get_users_and_task_count(conn):
     try:
@@ -341,14 +363,17 @@ def get_users_and_task_count(conn):
         return []
 
 
-
 conn = create_connection()
 if conn:
-    user_id = 19                    # For all users, or you can specify a user_id
-    task_id = 1                     # Specify the task_id to update
-    new_status_name = "in_progress" # Specify the new status ('new', 'in_progress', 'completed')
+    user_id = 19  # For all users, or you can specify a user_id
+    task_id = 1  # Specify the task_id to update
+    new_status_name = (
+        "in_progress"  # Specify the new status ('new', 'in_progress', 'completed')
+    )
     print()
-    status_name = None              # For a specific status, or you can leave it as None for all statuses
+    status_name = (
+        None  # For a specific status, or you can leave it as None for all statuses
+    )
 
     update_task_status(conn, task_id, new_status_name)
     print("-----------------------------------------------------------------")
@@ -356,7 +381,9 @@ if conn:
     tasks = get_tasks(conn, user_id, status_name)
     if tasks:
         for task in tasks:
-            print(f"Task ID: {task[0]}, Title: {task[1]}, Description: {task[2]}, Status: {task[3]}")
+            print(
+                f"Task ID: {task[0]}, Title: {task[1]}, Description: {task[2]}, Status: {task[3]}"
+            )
     else:
         print(f"No tasks found.")
     print("-----------------------------------------------------------------")
@@ -383,7 +410,9 @@ if conn:
     if incomplete_tasks:
         print("Incomplete tasks:")
         for task in incomplete_tasks:
-            print(f"Task ID: {task[0]}, Title: {task[1]}, Description: {task[2]}, Status: {task[3]}")
+            print(
+                f"Task ID: {task[0]}, Title: {task[1]}, Description: {task[2]}, Status: {task[3]}"
+            )
     else:
         print("No incomplete tasks.")
     print("-----------------------------------------------------------------")
@@ -421,7 +450,9 @@ if conn:
     if tasks:
         print(f"Tasks for users with email domain {domain}:")
         for task in tasks:
-            print(f"Task ID: {task[0]}, Title: {task[1]}, Description: {task[2]}, User Email: {task[3]}")
+            print(
+                f"Task ID: {task[0]}, Title: {task[1]}, Description: {task[2]}, User Email: {task[3]}"
+            )
     else:
         print(f"No tasks found for users with email domain '@{domain}'.")
     print("-----------------------------------------------------------------")
@@ -439,7 +470,9 @@ if conn:
     if users_with_in_progress:
         print("Users with in progress tasks:")
         for user in users_with_in_progress:
-            print(f"User ID: {user[0]}, Name: {user[1]}, Task ID: {user[2]}, Task Title: {user[3]}")
+            print(
+                f"User ID: {user[0]}, Name: {user[1]}, Task ID: {user[2]}, Task Title: {user[3]}"
+            )
     else:
         print("No users with in progress tasks.")
     print("-----------------------------------------------------------------")

@@ -17,12 +17,13 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
 num_users = 30
-statuses = ['new', 'in_progress', 'completed']
+statuses = ["new", "in_progress", "completed"]
 num_tasks = 10
 
 # Create a Faker instance
 
 fake = Faker()
+
 
 def create_connection():
     # Connects to the 'hw3' database
@@ -32,12 +33,13 @@ def create_connection():
             user=DB_USER,
             password=DB_PASSWORD,
             host=DB_HOST,
-            port=DB_PORT
+            port=DB_PORT,
         )
         return conn
     except psycopg2.Error as e:
         print(f"Error connection to the '{DB_NAME}' database: {e}")
         return None
+
 
 def insert_random_users(conn, num_users):
     # Insert random users into the users table.
@@ -47,11 +49,12 @@ def insert_random_users(conn, num_users):
             email = fake.email()
             cur.execute(
                 "INSERT INTO users (fullname, email) VALUES (%s, %s) RETURNING id;",
-                (fullname, email)
+                (fullname, email),
             )
             user_id = cur.fetchone()[0]
             print(f"Inserted user {fullname} with ID {user_id}.")
         conn.commit()
+
 
 def insert_random_status(conn, statuses):
     # Insert random statuses into the status table.
@@ -59,7 +62,7 @@ def insert_random_status(conn, statuses):
         for status in statuses:
             cur.execute(
                 "INSERT INTO status (name) VALUES (%s) ON CONFLICT (name) DO NOTHING;",
-                (status,)
+                (status,),
             )
         conn.commit()
         print(f"Inserted statuses: {','.join(statuses)}.")
@@ -75,10 +78,11 @@ def insert_random_tasks(conn, num_tasks):
             user_id = random.randint(1, num_users)
             cur.execute(
                 "INSERT INTO tasks (title, description, status_id, user_id) VALUES (%s, %s, %s, %s);",
-                (title, description, status_id, user_id)
+                (title, description, status_id, user_id),
             )
             print(f"Inserted task: {title}.")
         conn.commit()
+
 
 if __name__ == "__main__":
     # 1. Connect to the hw3 database
