@@ -2,6 +2,7 @@ import requests
 import re
 import matplotlib.pyplot as plt
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 
 def fetch_text_from_url(url):
     response = requests.get(url)
@@ -30,9 +31,10 @@ def reduce_function(shuffled_values):
     return reduced
 
 def map_reduce(text):
-    mapped_values = map_function(text)
-    shuffled_values = shuffle_function(mapped_values)
-    reduced_values = reduce_function(shuffled_values)
+    with ThreadPoolExecutor() as executor:
+        mapped_values = executor.submit(map_function, text).result()
+        shuffled_values = executor.submit(shuffle_function, mapped_values).result()
+        reduced_values = executor.submit(reduce_function, shuffled_values).result()
     return reduced_values
 
 def visualize_top_words(word_counts, top_n=10):
